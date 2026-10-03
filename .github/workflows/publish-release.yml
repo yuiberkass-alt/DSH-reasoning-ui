@@ -1,0 +1,74 @@
+name: Publish plugin release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths: ['.github/workflows/publish-release.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-plugin-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Check plugin and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tag="v$version"
+          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "$tag" ]]; then
+            echo "Tag must match package.json version"
+            exit 1
+          fi
+          archive="downloads/dsh-chibi-slider-$tag.zip"
+          test -f "$archive"
+          node --check client.js
+          node --test tests/plugin.test.mjs
+          unzip -t "$archive"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; keeping its assets unchanged."
+            exit 0
+          fi
+          (cd downloads && sha256sum "dsh-chibi-slider-$tag.zip") > SHA256SUMS
+          cat > release-notes.md <<'NOTES'
+          DSH 桌面端原生界面插件，适配 0.2.0-rc.2。
+
+          ### 功能
+          - 按当前模型支持的推理等级显示分段滑块。
+          - Q 版鲸娘待机、起跑、奔跑和收步动画。
+          - 普通档位使用蓝色进度条，未选择区域为白色浅底；Max 档显示紫色星光。
+          - 支持拖动、点击档位和键盘操作，保留原生模型选择。
+
+          ### 安装
+          1. 在下方 Assets 下载 dsh-chibi-slider-v版本号.zip（插件安装包）。
+          2. 解压到固定目录。
+          3. DSH → 插件 → 添加插件，选择解压后的插件目录并启用。
+          4. 保留该目录；更新后完全退出并重新打开 DSH。
+
+          Source code (zip/tar.gz) 是 GitHub 自动生成的完整源码包；安装插件请选择上面的 dsh-chibi-slider 安装包。
+
+          ### 验证与隐私
+          - 发布前执行语法检查、插件测试和 ZIP 完整性检查。
+          - 安装包不包含个人会话、账号配置、密钥、原始参考图或个人路径。
+          - 完整动画、所有模型及错误恢复的实机验证尚未全部完成。
+          - SHA256SUMS 提供安装包校验值。
+          NOTES
+          gh release create "$tag" "$archive" SHA256SUMS \
+            --target "$GITHUB_SHA" \
+            --title "$tag · Q版鲸娘推理滑块" \
+            --notes-file release-notes.md \
+            --latest
