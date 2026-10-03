@@ -16,7 +16,7 @@ DeepSeek Harness (DSH) 桌面端原生界面插件，适配 `0.2.0-rc.2`。
 
 ## 安装与使用
 
-[下载 v1.0.0 安装包](https://github.com/yuiberkass-alt/DSH-reasoning-ui/raw/refs/heads/main/downloads/dsh-chibi-slider-v1.0.0.zip)
+[下载 v1.0.0 安装包](https://github.com/yuiberkass-alt/DSH-reasoning-ui/releases/download/v1.0.0/dsh-chibi-slider-v1.0.0.zip)
 
 ZIP SHA-256：`4633aa70fe02e176bfb0509b0119cb45ab55079d0983b8ca94363d4181f93db3`
 
