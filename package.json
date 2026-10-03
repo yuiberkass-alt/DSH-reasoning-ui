@@ -1,0 +1,40 @@
+{
+  "name": "@local/dsh-chibi-slider",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Q版鲸娘推理滑块：待机、奔跑过渡与 Max 星光轨道",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale",
+    "assets",
+    "src",
+    "build.mjs",
+    "tests",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-model-selection"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/plugin.test.mjs"
+  }
+}
